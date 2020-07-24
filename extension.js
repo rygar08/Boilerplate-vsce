@@ -58,17 +58,17 @@ function CreateBoilerPlate() {
                         const appPath = CreateDir(`${rootPath}/app`);
                         const appPathE = CreateDir(`${rootPath}/app/${entityL}s`);
 
-                        CreateFile(path.join(appPathE, `${settings.entity.name}.component.ts`), body(settings.listTS), () => {
-                            CreateFile(path.join(appPathE, `${settings.entity.name}.component.html`), body(settings.listHtml), () => {
+                        CreateFile(path.join(appPathE, `${entityL}.component.ts`), body(settings.listTS), () => {
+                            CreateFile(path.join(appPathE, `${entityL}.component.html`), body(settings.listHtml), () => {
 
                                 const appPathCE = CreateDir(`${appPathE}/${entityL}-edit`);
 
-                                CreateFile(path.join(appPathCE, `${settings.entity.name}-edit.component.ts`), body(settings.editTS), () => {
-                                    CreateFile(path.join(appPathCE, `${settings.entity.name}-edit.component.html`), body(settings.editHTML), () => {
+                                CreateFile(path.join(appPathCE, `${entityL}-edit.component.ts`), body(settings.editTS), () => {
+                                    CreateFile(path.join(appPathCE, `${entityL}-edit.component.html`), body(settings.editHTML), () => {
 
                                         const appPathCC = CreateDir(`${appPathE}/${entityL}-create`);
-                                        CreateFile(path.join(appPathCC, `${settings.entity.name}-create.component.ts`), body(settings.createTS), () => {
-                                            CreateFile(path.join(appPathCC, `${settings.entity.name}-create.component.html`), body(settings.createHTML), () => {
+                                        CreateFile(path.join(appPathCC, `${entityL}-create.component.ts`), body(settings.createTS), () => {
+                                            CreateFile(path.join(appPathCC, `${entityL}-create.component.html`), body(settings.createHTML), () => {
                                                 vscode.window.showErrorMessage('All Good!');
                                             });
                                         });
@@ -114,7 +114,7 @@ function body(str) {
 const settings = {
     appName: 'KM',
     entity: {
-        name: "ApiKey",
+        name: "Blog",
         multiTenancySides: "Tenant",
         fields: [
             ["Name", "string"],
