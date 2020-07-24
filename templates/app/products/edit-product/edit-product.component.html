@@ -1,0 +1,13 @@
+
+<form class="form-horizontal" autocomplete="off" #editForm="ngForm" (ngSubmit)="save()">
+    <abp-modal-header [title]="'Edit Product' | localize" (onCloseClick)="bsModalRef.hide()"></abp-modal-header>
+    <div class="modal-body">
+        <tabset>
+            <tab [heading]="'Details' | localize" class="pt-3 px-2">
+
+            </tab>
+        </tabset>
+    </div>
+    <abp-modal-footer [cancelDisabled]="saving" [saveDisabled]="!editForm.form.valid || saving"
+        (onCancelClick)="bsModalRef.hide()"></abp-modal-footer>
+</form>
