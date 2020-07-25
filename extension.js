@@ -5,6 +5,23 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
+const { settings } = require('cluster');
+
+const config = {
+    appName: 'KM',
+    entity: {
+        name: "Blog",
+        multiTenancySides: "Tenant",
+        fields: [
+            ["Name", "string"],
+            ["Name", "int"]
+        ]
+    },
+    host: {
+        component: "list",
+        menuicon: "lock"
+    }
+}
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -21,7 +38,7 @@ function activate(context) {
                 return vscode.window.showErrorMessage(
                     'Please open a project folder first'
                 );
-            }
+            } 
 
             CreateBoilerPlate();
 
@@ -38,37 +55,41 @@ function deactivate() { }
 exports.deactivate = deactivate;
 
 function CreateBoilerPlate() {
-    const rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    const solutionPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    const srcPath = CreateDir(`${solutionPath}/src`);
+    vscode.window.showErrorMessage(solutionPath);
 
-    CreateFile(path.join(rootPath, 'checklist.txt'), body(settings.checklist), () => {
+    CreateFile(path.join(solutionPath, 'checklist.txt'), body(templates.checklist), () => {
 
-        const corePath = CreateDir(`${rootPath}/Core`);
-        const corePathE = CreateDir(`${rootPath}/Core/${settings.entity.name}s`);
+        const corePath = CreateDir(`${srcPath}/${config.appName}.Core`);
+        const corePathE = CreateDir(`${srcPath}/${config.appName}.Core/${config.entity.name}s`);
 
-        CreateFile(path.join(corePathE, `${settings.entity.name}.cs`), body(settings.serverside.entity), () => {
+        CreateFile(path.join(corePathE, `${config.entity.name}.cs`), body(templates.serverside.entity), () => {
 
-            const ServerAppPath = CreateDir(`${rootPath}/Application`);
-            const ServerAppPathE = CreateDir(`${rootPath}/Application/${settings.entity.name}s`);
+            const ServerAppPath = CreateDir(`${srcPath}/${config.appName}.Application`);
+            const ServerAppPathE = CreateDir(`${srcPath}/${config.appName}.Application/${config.entity.name}s`);
 
-            CreateFile(path.join(ServerAppPathE, `${settings.entity.name}AppService.cs`), body(settings.serverside.appService), () => {
-                CreateFile(path.join(ServerAppPathE, `Create${settings.entity.name}Dto.cs`), body(settings.serverside.createdtos), () => {
-                    CreateFile(path.join(ServerAppPathE, `${settings.entity.name}Dto.cs`), body(settings.serverside.entityDto), () => {
+            CreateFile(path.join(ServerAppPathE, `${config.entity.name}AppService.cs`), body(templates.serverside.appService), () => {
+                CreateFile(path.join(ServerAppPathE, `Create${config.entity.name}Dto.cs`), body(templates.serverside.createdtos), () => {
+                    CreateFile(path.join(ServerAppPathE, `${config.entity.name}Dto.cs`), body(templates.serverside.entityDto), () => {
 
-                        const entityL = settings.entity.name.toLowerCase();
-                        const appPath = CreateDir(`${rootPath}/app`);
-                        const appPathE = CreateDir(`${rootPath}/app/${entityL}s`);
+                        const entityL = config.entity.name.toLowerCase();
+                        const appPath = CreateDir(`${srcPath}/${config.appName}.Web.Host`);
+                        const appPathsrc = CreateDir(`${appPath}/src`);
+                        const appPathsrcApp = CreateDir(`${appPathsrc}/app`);
+                        const appPathE = CreateDir(`${appPathsrcApp}/${entityL}s`);
 
-                        CreateFile(path.join(appPathE, `${entityL}.component.ts`), body(settings.listTS), () => {
-                            CreateFile(path.join(appPathE, `${entityL}.component.html`), body(settings.listHtml), () => {
+                        CreateFile(path.join(appPathE, `${entityL}s.component.ts`), body(templates.listTS), () => {
+                            CreateFile(path.join(appPathE, `${entityL}s.component.html`), body(templates.listHtml), () => {
 
                                 const appPathCE = CreateDir(`${appPathE}/${entityL}-edit`);
 
-                                CreateFile(path.join(appPathCE, `${entityL}-edit.component.ts`), body(settings.editTS), () => {
-                                    CreateFile(path.join(appPathCE, `${entityL}-edit.component.html`), body(settings.editHTML), () => {
+                                CreateFile(path.join(appPathCE, `${entityL}-edit.component.ts`), body(templates.editTS), () => {
+                                    CreateFile(path.join(appPathCE, `${entityL}-edit.component.html`), body(templates.editHTML), () => {
 
                                         const appPathCC = CreateDir(`${appPathE}/${entityL}-create`);
-                                        CreateFile(path.join(appPathCC, `${entityL}-create.component.ts`), body(settings.createTS), () => {
-                                            CreateFile(path.join(appPathCC, `${entityL}-create.component.html`), body(settings.createHTML), () => {
+                                        CreateFile(path.join(appPathCC, `${entityL}-create.component.ts`), body(templates.createTS), () => {
+                                            CreateFile(path.join(appPathCC, `${entityL}-create.component.html`), body(templates.createHTML), () => {
                                                 vscode.window.showErrorMessage('All Good!');
                                             });
                                         });
@@ -104,27 +125,14 @@ function CreateFile(url, body, next) {
 }
 
 function body(str) {
-    str = str.replace(/X-ENTITY/g, settings.entity.name);
-    str = str.replace(/X-entity/g, settings.entity.name.toLowerCase());
-    str = str.replace(/X-icon/g, settings.host.menuicon);
-    str = str.replace(/X-AppName/g, settings.appName);
+    str = str.replace(/X-ENTITY/g, config.entity.name);
+    str = str.replace(/X-entity/g, config.entity.name.toLowerCase());
+    str = str.replace(/X-icon/g, config.host.menuicon);
+    str = str.replace(/X-AppName/g, config.appName);
     return str;
 }
 
-const settings = {
-    appName: 'KM',
-    entity: {
-        name: "Blog",
-        multiTenancySides: "Tenant",
-        fields: [
-            ["Name", "string"],
-            ["Name", "int"]
-        ]
-    },
-    host: {
-        component: "list",
-        menuicon: "lock"
-    },
+const templates = {
     checklist: `
 
 // Server-Side  
@@ -133,8 +141,11 @@ const settings = {
         public DbSet<X-ENTITY> X-ENTITYs { get; set; }  
     - Add Migration and Update  
     - Add a DTO in Application  
+
+    - Register a Permission names => PermissionNames.cs 
+        public const string Pages_X-ENTITYs = "Pages.X-ENTITYs";
     - Register a Permission => LeesStoreAuthorizationProvider.cs 
-        context.CreatePermission(PermissionNames.Pages_X-ENTITYs, L("X-ENTITY"), multiTenancySides: MultiTenancySides.Entity);
+        context.CreatePermission(PermissionNames.Pages_X-ENTITYs, L("X-ENTITY"), multiTenancySides: MultiTenancySides.Tenant);
     - localization  to LeesStore.xml  
         <text name="X-ENTITYs" value="X-ENTITYs" />
     - Add an AppService  
@@ -148,10 +159,10 @@ const settings = {
         new MenuItem(this.l('X-ENTITYs'), '/app/X-ENTITYs', 'fas fa-X-icon', 'Pages.X-ENTITYs')  
     - Entity components  
     - Update Route 
-        import { X-ENTITYsComponent } from './X-entitys/X-entity.component';
+        import { X-ENTITYsComponent } from './X-entitys/X-entitys.component';
         { path: 'X-entity', component: X-ENTITYsComponent, data: { permission: 'Pages.X-ENTITYs' }, canActivate: [AppRouteGuard] }, 
     - Register new components in app.module.ts 
-        import { X-ENTITYModule } from './entityname/entityname.module'; 
+        import { X-ENTITYModule } from './X-entitys/X-entitys.module'; 
     `,
     listHtml: `
     <div [@routerTransition]>
@@ -249,8 +260,8 @@ import {
   X-ENTITYDto,
   X-ENTITYDtoPagedResultDto
 } from '@shared/service-proxies/service-proxies';
-import { X-ENTITYsCreateComponent } from './X-entity-create/X-entity-create.component';
-import { X-ENTITYsEditComponent } from './X-entity-edit/X-entity-edit.component';
+import { X-ENTITYCreateComponent } from './X-entity-create/X-entity-create.component';
+import { X-ENTITYEditComponent } from './X-entity-edit/X-entity-edit.component';
 
 class PagedX-ENTITYsRequestDto extends PagedRequestDto {
   keyword: string;
@@ -291,7 +302,7 @@ export class X-ENTITYsComponent extends PagedListingComponentBase<X-ENTITYDto> {
 
   delete(X-entity: X-ENTITYDto): void {
     abp.message.confirm(
-      this.l('X-ENTITYDeleteWarningMessage', X-entity.displayName),
+      this.l('X-ENTITYDeleteWarningMessage', X-entity.id),
       undefined,
       (result: boolean) => {
         if (result) {
@@ -365,7 +376,7 @@ import { BsModalRef } from "ngx-bootstrap/modal";
 import * as _ from "lodash";
 import { AppComponentBase } from "@shared/app-component-base";
 import {
-   X-ENTITYsServiceProxy, GetX-ENTITYForEditOutput, X-ENTITYDto,  X-ENTITYsEditDto 
+    X-ENTITYsServiceProxy, CreateX-ENTITYDto  
 } from "@shared/service-proxies/service-proxies";
 
 @Component({
@@ -374,7 +385,7 @@ import {
 export class X-ENTITYEditComponent extends AppComponentBase implements OnInit {
    saving = false;
    id: number;
-   X-entity = new X-ENTITYsEditDto(); 
+   X-entity = new CreateX-ENTITYDto();  
 
    @Output() onSave = new EventEmitter<any>();
 
@@ -394,7 +405,7 @@ export class X-ENTITYEditComponent extends AppComponentBase implements OnInit {
    save(): void {
       this.saving = true;
 
-      const X-entity = new X-ENTITYDto();
+      const X-entity = new CreateX-ENTITYDto();
       X-entity.init(this.X-entity); 
 
       this._X-entityService
@@ -462,7 +473,7 @@ export class X-ENTITYEditComponent extends AppComponentBase implements OnInit {
           const X-entity = new CreateX-ENTITYDto();
           X-entity.init(this.X-entity); 
     
-          this._X-entityService
+          this._X-entitysService
              .create(X-entity)
              .pipe(
                 finalize(() => {
@@ -489,10 +500,10 @@ using Abp.Domain.Entities.Auditing;
 using Abp.Timing;
 using Abp.UI; 
 
-namespace X-AppNameX-ENTITYs
+namespace X-AppName.X-ENTITYs
 {
-    [Table("AppX-ENTITYs")]
-    public class X-ENTITY : FullAuditedEntity<Guid>, IMustHaveTenant
+    [Table("X-AppNameX-ENTITYs")]
+    public class X-ENTITY : FullAuditedEntity<int>, IMustHaveTenant
     {
         public const int MaxTitleLength = 128; 
 
@@ -508,11 +519,10 @@ namespace X-AppNameX-ENTITYs
 
         }
 
-        public static X-ENTITY Create(int tenantId, string title, DateTime date, string description = null, int maxRegistrationCount = 0)
+        public static X-ENTITY Create(int tenantId, string title)
         {
             var X-entity = new X-ENTITY
-            {
-                Id = Guid.NewGuid(),
+            { 
                 TenantId = tenantId,
                 Title = title 
             };  
@@ -537,9 +547,9 @@ using Abp.AutoMapper;
 using Abp.Domain.Repositories;
 using Abp.Linq.Extensions;
 using Abp.Runtime.Session;
-using Abp.UI;
+using Abp.UI; 
+using X-AppName.X-ENTITYs;
 using X-AppName.Authorization;
-using X-AppName.Authorization.X-ENTITY;
 using X-AppName.Authorization.Users;
 using X-AppName.Events;
 using X-AppName.Events.Dtos;
@@ -550,10 +560,10 @@ namespace X-AppName.X-ENTITYs
 {
 
     [AbpAuthorize(PermissionNames.Pages_X-ENTITYs)]
-    public class X-ENTITYsAppService : AsyncCrudAppService<X-ENTITY, X-ENTITYDto,long, PagedAndSortedResultRequestDto, CreateX-ENTITYDto> {
-        private readonly IRepository<X-ENTITY, long> _repository;
+    public class X-ENTITYsAppService : AsyncCrudAppService<X-ENTITY, X-ENTITYDto,int, PagedAndSortedResultRequestDto, CreateX-ENTITYDto> {
+        private readonly IRepository<X-ENTITY, int> _repository;
 
-        public X-ENTITYsAppService(IRepository<X-ENTITY, long> repository) : base(repository)
+        public X-ENTITYsAppService(IRepository<X-ENTITY, int> repository) : base(repository)
         {
             _repository = repository;
         }
@@ -566,8 +576,8 @@ namespace X-AppName.X-ENTITYs
 using System.ComponentModel.DataAnnotations;
 using Abp.Application.Services.Dto;
 
-namespace X-AppName.Authorization.X-ENTITY {
-    public class X-ENTITYDto : EntityDto<long> {
+namespace X-AppName.X-ENTITYs {
+    public class X-ENTITYDto : EntityDto<int> {
 
         [Required]
         [StringLength(256)]
@@ -577,8 +587,7 @@ namespace X-AppName.Authorization.X-ENTITY {
         
         `,
         createdtos: `
-using System.ComponentModel.DataAnnotations;
-using X-AppName.X-ENTITY;
+using System.ComponentModel.DataAnnotations; 
 
 namespace X-AppName.X-ENTITYs {
     public class CreateX-ENTITYDto : X-ENTITYDto {
