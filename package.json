@@ -17,7 +17,7 @@
     "activationEvents": [
         "onCommand:extension.createWebBoilerplate"
     ],
-    "main": "./extension",
+    "main": "./extension_abp_angular_fields",
     "contributes": {
         "commands": [
             {
